@@ -1,38 +1,34 @@
 from bs4 import BeautifulSoup
-import urllib2
 import requests
 import csv
 
 
-baseurl = "http://billboardtop100of.com/"
+baseurl = "http://www.bobborst.com/popculture/top-100-songs-of-the-year/?year="
 
-dates = range(1941,2015)
+startYear = 1941
+endYear = 2015
+dates = range(startYear,endYear)
 
 artists = []
 songs = []
-
 for date in dates:
-    url_end = str(date) + "-2/"
-    url = baseurl + url_end
-    print url
-    temp_artists = []
-    temp_songs = []
-    response = requests.get(url)
-    html = response.text
-    soup = BeautifulSoup(html, "lxml")
-    try:
-        table = soup.find("table")
-        strings = table.find_all('td')
-        count = 1
-        for i in strings:
-            if (count % 3 == 2):
-                temp_artists.append(i.string)
-            elif (count % 3 == 0):
-                temp_songs.append(i.string)
-            count = count + 1
+    #get soup
+    url = baseurl + str(date)
+    html = requests.get(url)
+    soup = BeautifulSoup(html.text, "lxml")
+    table = soup.find("tbody")
+    cells = table.find_all('td')
+    
+    #pull stuff from soup
+    artists.append([])
+    songs.append([])
+    count = 1
+    for cell in cells:
+        if (count % 3 == 2):
+            artists[date-startYear].append(cell.string)
+        elif (count % 3 == 0):
+            songs[date-startYear].append(cell.string)
+        count += 1
 
-    except:
-        print "Error: " + str(date)
-    artists.append(temp_artists)
-    songs.append(temp_songs)
-        
+print(artists)
+print(songs)
