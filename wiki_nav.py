@@ -13,6 +13,10 @@ def get_born(artist):
             wiki_page = wikipedia.page(artist + ' (band)')
         except:
             return notFound
+            
+    # TODO:
+    # Still need to handle the case of collabs, aka artist = artist1, artist2
+    # Also these multiple try-catch blocks seem inelegant, fix it
 
     wiki_html = requests.get(wiki_page.url).text
     soup = BeautifulSoup(wiki_html, 'lxml')
@@ -46,7 +50,7 @@ def get_born(artist):
 
                     # concatenate born info into a single dict
                     info[0].append(member_info[0])
-                    info[1].append(member_info[0])
+                    info[1].append(member_info[1])
             return info
         else:
             return notFound

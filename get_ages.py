@@ -1,3 +1,5 @@
+## THIS ONE IS DUMB.  WILL DELETE SOON
+
 from wiki_nav import get_born
 import wikipedia
 import requests

@@ -4,14 +4,14 @@ from threading import Thread
 from queue import Queue
 
 # (play around with threading etc.)
-# Goal: open a wikipedia page, get all links, print the title of eveyr page linked to
+# Goal: open a wikipedia page, get all links, print the title of every page linked to
 
 # function to follow link and print title
 def follow_link(url_queue, id):
 	# link following function for a worker to perform until empty
 	while True:
 		# pop a new url from the queue
-		# print('Worker #', i, 'waiting')
+		# print('Worker #', id, 'waiting')
 		url = url_queue.get()
 		if url != None:
 			# follow link
