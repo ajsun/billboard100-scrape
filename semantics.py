@@ -8,6 +8,7 @@ Created on Wed Dec  9 14:58:27 2015
 
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 
 # Pleasing colormap to use, 'Tableau 20'
 t20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),    
@@ -22,26 +23,30 @@ def normalize(freqs, count):
     # Normalize a frequency dictionary to occurences per billion
     freqs_normalized = dict()
     for word in freqs:
-        freqs_normalized[word] = (freqs[word]/count)*1E7
+        freqs_normalized[word] = (freqs[word]/count)*1E9
     return freqs_normalized
     
-def compare_freqs(default, sample, n=20, sort='diff', plot_flag=True):
+def compare_freqs(default, sample, default_label='Default',
+		sample_label='Sample', n=20, sort='diff', plot_flag=True):
 	# compare top word frequencies of a sample to the base language
 	# both args should be of type dict with entries {word: p}, p in [0,1]
-	if n > len(freqs):
-        n = len(sample)
+	if n > len(sample):
+		n = len(sample)
 
 	diffs = dict()
 	for word in sample:
 	    if word in default:
 	        diffs[word] = sample[word] - default[word]
 	    else:
+	    	# 
 	        diffs[word] = sample[word]
+	        # Add to default dictionary 
+	        default[word] = 0
 
     # Do plotting stuff
 	if plot_flag:
 		# initialize
-		plt.figure(figsize=(12,14))
+		plt.figure(figsize=(6,4))
 		beautify_plot()
 
 		# sort according to specified argument
@@ -52,22 +57,25 @@ def compare_freqs(default, sample, n=20, sort='diff', plot_flag=True):
 		else:
 			words_sorted = sorted(default, key=default.get, reverse=True)
 
-		diffs_sorted = [diffs[word] for word in words_sorted]
-		sample_sorted = [sample[word] for word in words_sorted]
-		default_sorted = [default[word] for word in words_sorted]
+		# sort each list of values
+		diffs_sorted = [diffs[word] for word in words_sorted[:n]]
+		sample_sorted = [sample[word] for word in words_sorted[:n]]
+		default_sorted = [default[word] for word in words_sorted[:n]]
 
 		# now plot top n words on alternating horizontal lines 
-		plt.ylim(0,2*n)
+		plt.ylim(-1,2*n)
 		# Plot sample frequencies
-		plt.barh(range(2*n-1,-1,-2), default_sorted[:n],
-			align='center', color=t20[0], alpha=0.8)
+		sample_bars = plt.barh(range(2*n-1,-1,-2), sample_sorted,
+			align='center', color=t20[2], alpha=0.8, label=sample_label)
 		# Plot default frequencies
-		plt.barh(range(2*n-2,-1,-2), sample_sorted[:n],
-			align='center', color=t20[1], alpha=0.8)
+		default_bars = plt.barh(range(2*n-2,-1,-2), default_sorted,
+			align='center', color=t20[1], alpha=0.8, label=default_label)
 
 		# Label each bar with its word
-		plt.yticks(range(n-1,-1,-1), words_sorted[:n])
+		label_locations = [x-0.5 for x in range(2*n-1,-1,-2)]
+		plt.yticks(label_locations, words_sorted)
 		plt.xlabel('Word Frequency (per billlion)')
+		plt.legend(handles=[sample_bars,default_bars], loc=4)
 		#plt.title('Top ' + str(n) + ' words used in Billboard 100 Songs')
 		plt.show()
 
@@ -83,7 +91,7 @@ def plot_freqs(freqs, n=30):
     freqs_sorted = [freqs[word] for word in words_sorted[:n]]
     
     # plot
-    plt.figure(figsize=(12,14))
+    plt.figure(figsize=(6,4))
     beautify_plot()
     plt.ylim(0,n)
     #plt.xlim(0,MAX_OF_FREQS)
@@ -107,4 +115,27 @@ def beautify_plot():
 
 	# Any other default edits to the plot can go here:
 
+def read_freqs(text_file):
+	# read a three-column text file of rank / word / frequency
+	# open file
+	fhandle = open(text_file, 'r')
+	full_text = fhandle.read()
+	# initialize dictionary
+	freqs = dict()
+
+	#Compile excluded characters 
+	excluded_chars = re.compile("[][,!@#$%^&*()+:;?'\"-]")
+
+	# loop through each line
+	for line in full_text.split('\n'):
+		split_line = line.split()
+		if len(split_line) == 3:
+			# Clean up contractions etc.
+			word = excluded_chars.sub('', split_line[1])
+			# Convert frequency to double
+			freq = float(split_line[2])
+			# add to dictionary
+			freqs[word] = freq
+
+	return freqs
 
