@@ -21,13 +21,13 @@ class Billboard:
     def add_entry(self, new_entry):
         self.entries.append(new_entry)
 
-    def word_count(self, print_flag=True):
+    def word_count(self, print_flag=False):
         # initialize dictionary of {word: frequency}
         freqs = dict()
         num_words = 0
 
         # Generate regular expressions to clean titles
-        excluded_chars = re.compile("[],!@#$%^&*()+:;?'\"-]")
+        excluded_chars = re.compile("[][,!@#$%^&*()+:;?'\"-]")
         space_chars = re.compile('[./-]')
 
         # loop through each title
@@ -65,6 +65,7 @@ class Entry:
         self.pos = info[0]
         self.artist = info[1]
         self.title = info[2]
+
         # has entry been completed?
         self.completed = False
 
@@ -86,7 +87,7 @@ class Entry:
                 ages.append(self.date - year)
             return ages
 
-    def get_size(self):
+    def __len__(self):
         return len(self.members)
 
     # Ways of print_flag 
