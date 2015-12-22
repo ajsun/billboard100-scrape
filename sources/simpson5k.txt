@@ -1,4 +1,3 @@
-Rank	Word	Frequency
 1	the	107946
 2	you	98068
 3	i	91502
