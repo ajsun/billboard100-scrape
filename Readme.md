@@ -1,3 +1,16 @@
-## Scraping Billboard 100 List
+Scraping Billboard 100 List
+======================
 
-Edited a bunch of files
+Welcome to our project looking at semantics of Billboard 100 titles through the years. 
+
+Execute:
+======================
+```bash
+# run the visualization script
+python visualize.py
+```
+
+Dependencies:
+======================
+- Pandas
+- Matplotlib
