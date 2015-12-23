@@ -78,7 +78,7 @@ def compare_freqs(default, sample, default_label='Default',
 			height=bar_width, linewidth=0)
 
 		# Label each pair of bars with its word
-		plt.xlabel('Word Frequency (per billlion)')
+		plt.title('Frequencies of popular words (per billlion)')
 		plt.yticks(label_locs, words_sorted)
 		plt.ylim(0,n+1)
 
@@ -101,8 +101,8 @@ def plot_freqs(freqs, n=30):
     freqs_sorted = [freqs[word] for word in words_sorted[:n]]
     
     # plot
-    plt.figure(figsize=(6,4))
-    beautify_plot()
+    fig = plt.figure(figsize=(6,4))
+    beautify_plot(fig)
     plt.ylim(0,n)
     #plt.xlim(0,MAX_OF_FREQS)
     
