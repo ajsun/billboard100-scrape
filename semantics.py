@@ -62,23 +62,31 @@ def compare_freqs(default, sample, default_label='Default',
 		sample_sorted = [sample[word] for word in words_sorted[:n]]
 		default_sorted = [default[word] for word in words_sorted[:n]]
 
-		# now plot top n words on alternating horizontal lines 
-		plt.ylim(-1,2*n)
+		# Set locations for bars and labels
+		bar_width = 0.4
+		sample_locs = np.arange(n, 0, -1) + bar_width/2
+		default_locs = np.arange(n, 0, -1) - bar_width/2
+		label_locs = np.arange(n, 0, -1)
+
 		# Plot sample frequencies
-		sample_bars = plt.barh(range(2*n-1,-1,-2), sample_sorted,
+		sample_bars = plt.barh(sample_locs, sample_sorted,
 			align='center', color=t20[2], alpha=0.8, label=sample_label,
-			linewidth=0)
+			height=bar_width, linewidth=0)
 		# Plot default frequencies
-		default_bars = plt.barh(range(2*n-2,-1,-2), default_sorted,
+		default_bars = plt.barh(default_locs, default_sorted,
 			align='center', color=t20[1], alpha=0.8, label=default_label,
-			linewidth=0)
+			height=bar_width, linewidth=0)
 
-		# Label each bar with its word
-		label_locations = [x-0.5 for x in range(2*n-1,-1,-2)]
-		plt.yticks(label_locations, words_sorted)
+		# Label each pair of bars with its word
 		plt.xlabel('Word Frequency (per billlion)')
-		plt.legend(handles=[sample_bars,default_bars], loc=4)
+		plt.yticks(label_locs, words_sorted)
+		plt.ylim(0,n+1)
 
+		# Legend
+		leg = plt.legend(handles=[sample_bars,default_bars], loc=4)
+		leg.draw_frame(False)
+
+		# Finally, show the plot
 		plt.show()
 
 	return diffs
@@ -118,6 +126,9 @@ def beautify_plot(fig):
 	ax.spines['right'].set_visible(False)
 	ax.spines['left'].set_visible(False)
 
+	plt.tick_params(axis='y', which='both', left='off', right='off')
+	plt.tick_params(axis='x', which='both', top='off', bottom='off')
+
 	# Any other default edits to the plot can go here:
 	# figure doesn't need to be returned as the pass was by reference
 
@@ -149,12 +160,12 @@ def write_freqs(filename, freqs):
 	fhandle = open(filename, 'w')
 	# Sort and write to file in sorted order
 	words_sorted = sorted(freqs, key=freqs.get, reverse=True)
-    freqs_sorted = [freqs[word] for word in words_sorted]
+	freqs_sorted = [freqs[word] for word in words_sorted]
 
-    for word, freq in zip(words_sorted, freqs_sorted):
-    	fhandle.write(word)
-    	fhandle.write('\t')
-    	fhandle.write(str(freq))
-    	fhandle.write('\n')
+	for word, freq in zip(words_sorted, freqs_sorted):
+		fhandle.write(word)
+		fhandle.write('\t')
+		fhandle.write(str(freq))
+		fhandle.write('\n')
 
-    fhandle.close()
+	fhandle.close()
