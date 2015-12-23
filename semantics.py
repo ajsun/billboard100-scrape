@@ -90,30 +90,7 @@ def compare_freqs(default, sample, default_label='Default',
 		plt.show()
 
 	return diffs
-    
-def plot_freqs(freqs, n=30):
-    # plot top n words and their frequencies from greatest to least
-    if n > len(freqs):
-        n = len(freqs)
-    
-    # sort in decreasing order
-    words_sorted = sorted(freqs, key=freqs.get, reverse=True)
-    freqs_sorted = [freqs[word] for word in words_sorted[:n]]
-    
-    # plot
-    plt.figure(figsize=(6,4))
-    beautify_plot()
-    plt.ylim(0,n)
-    #plt.xlim(0,MAX_OF_FREQS)
-    
-    # Plot in horizontal bars in descending order
-    plt.barh(range(n-1,-1,-1), freqs_sorted, 
-             align='center', color=t20[0], alpha=0.8, linewidth=0)
-    # Label each bar with its word
-    plt.yticks(range(n-1,-1,-1), words_sorted)
-    plt.xlabel('Word Frequency (per billlion)')
-    plt.title('Top ' + str(n) + ' words used in Billboard 100 Songs')
-    plt.show()
+
 
 def beautify_plot(fig):
 	# Set background color to white
@@ -131,6 +108,31 @@ def beautify_plot(fig):
 
 	# Any other default edits to the plot can go here:
 	# figure doesn't need to be returned as the pass was by reference
+
+
+def plot_freqs(freqs, n=30):
+    # plot top n words and their frequencies from greatest to least
+    if n > len(freqs):
+        n = len(freqs)
+    
+    # sort in decreasing order
+    words_sorted = sorted(freqs, key=freqs.get, reverse=True)
+    freqs_sorted = [freqs[word] for word in words_sorted[:n]]
+    
+    # plot
+    fig = plt.figure(figsize=(6,4))
+    beautify_plot(fig)
+    plt.ylim(0,n)
+    #plt.xlim(0,MAX_OF_FREQS)
+    
+    # Plot in horizontal bars in descending order
+    plt.barh(range(n-1,-1,-1), freqs_sorted, 
+             align='center', color=t20[0], alpha=0.8, linewidth=0)
+    # Label each bar with its word
+    plt.yticks(range(n-1,-1,-1), words_sorted)
+    plt.xlabel('Word Frequency (per billlion)')
+    plt.title('Top ' + str(n) + ' words used in Billboard 100 Songs')
+    plt.show()
 
 def read_freqs(text_file):
 	# read a three-column text file of rank / word / frequency
