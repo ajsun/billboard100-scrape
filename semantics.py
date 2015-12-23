@@ -78,7 +78,7 @@ def compare_freqs(default, sample, default_label='Default',
 			height=bar_width, linewidth=0)
 
 		# Label each pair of bars with its word
-		plt.xlabel('Word Frequency (per billlion)')
+		plt.title('Frequencies of popular words (per billlion)')
 		plt.yticks(label_locs, words_sorted)
 		plt.ylim(0,n+1)
 
@@ -126,8 +126,11 @@ def plot_freqs(freqs, n=30):
     #plt.xlim(0,MAX_OF_FREQS)
     
     # Plot in horizontal bars in descending order
-    plt.barh(range(n-1,-1,-1), freqs_sorted, 
+    bar_locs = np.arange(n, 0, -1)
+    bar_width = 1.0
+    plt.barh(bar_locs, freqs_sorted, height=bar_width,
              align='center', color=t20[0], alpha=0.8, linewidth=0)
+
     # Label each bar with its word
     plt.yticks(range(n-1,-1,-1), words_sorted)
     plt.xlabel('Word Frequency (per billlion)')
@@ -164,10 +167,9 @@ def write_freqs(filename, freqs):
 	words_sorted = sorted(freqs, key=freqs.get, reverse=True)
 	freqs_sorted = [freqs[word] for word in words_sorted]
 
-	for word, freq in zip(words_sorted, freqs_sorted):
-		fhandle.write(word)
-		fhandle.write('\t')
-		fhandle.write(str(freq))
-		fhandle.write('\n')
+	for i in range(len(words_sorted)):
+		fhandle.write(str(i) + '\t')
+		fhandle.write(str(words_sorted[i]) + '\t')
+		fhandle.write(str(freqs_sorted[i]) + '\n')
 
 	fhandle.close()
