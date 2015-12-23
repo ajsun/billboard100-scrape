@@ -107,8 +107,11 @@ def plot_freqs(freqs, n=30):
     #plt.xlim(0,MAX_OF_FREQS)
     
     # Plot in horizontal bars in descending order
-    plt.barh(range(n-1,-1,-1), freqs_sorted, 
+    bar_locs = np.arange(n, 0, -1)
+    bar_width = 1.0
+    plt.barh(bar_locs, freqs_sorted, height=bar_width,
              align='center', color=t20[0], alpha=0.8, linewidth=0)
+
     # Label each bar with its word
     plt.yticks(range(n-1,-1,-1), words_sorted)
     plt.xlabel('Word Frequency (per billlion)')
