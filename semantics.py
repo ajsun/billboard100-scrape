@@ -46,8 +46,8 @@ def compare_freqs(default, sample, default_label='Default',
     # Do plotting stuff
 	if plot_flag:
 		# initialize
-		plt.figure(figsize=(6,4))
-		beautify_plot()
+		fig = plt.figure(figsize=(6,4))
+		beautify_plot(fig)
 
 		# sort according to specified argument
 		if sort == 'diff':
@@ -62,24 +62,34 @@ def compare_freqs(default, sample, default_label='Default',
 		sample_sorted = [sample[word] for word in words_sorted[:n]]
 		default_sorted = [default[word] for word in words_sorted[:n]]
 
-		# now plot top n words on alternating horizontal lines 
-		plt.ylim(-1,2*n)
-		# Plot sample frequencies
-		sample_bars = plt.barh(range(2*n-1,-1,-2), sample_sorted,
-			align='center', color=t20[2], alpha=0.8, label=sample_label)
-		# Plot default frequencies
-		default_bars = plt.barh(range(2*n-2,-1,-2), default_sorted,
-			align='center', color=t20[1], alpha=0.8, label=default_label)
+		# Set locations for bars and labels
+		bar_width = 0.4
+		sample_locs = np.arange(n, 0, -1) + bar_width/2
+		default_locs = np.arange(n, 0, -1) - bar_width/2
+		label_locs = np.arange(n, 0, -1)
 
-		# Label each bar with its word
-		label_locations = [x-0.5 for x in range(2*n-1,-1,-2)]
-		plt.yticks(label_locations, words_sorted)
+		# Plot sample frequencies
+		sample_bars = plt.barh(sample_locs, sample_sorted,
+			align='center', color=t20[2], alpha=0.8, label=sample_label,
+			height=bar_width, linewidth=0)
+		# Plot default frequencies
+		default_bars = plt.barh(default_locs, default_sorted,
+			align='center', color=t20[1], alpha=0.8, label=default_label,
+			height=bar_width, linewidth=0)
+
+		# Label each pair of bars with its word
 		plt.xlabel('Word Frequency (per billlion)')
-		plt.legend(handles=[sample_bars,default_bars], loc=4)
-		#plt.title('Top ' + str(n) + ' words used in Billboard 100 Songs')
+		plt.yticks(label_locs, words_sorted)
+		plt.ylim(0,n+1)
+
+		# Legend
+		leg = plt.legend(handles=[sample_bars,default_bars], loc=4)
+		leg.draw_frame(False)
+
+		# Finally, show the plot
 		plt.show()
 
-		return diffs
+	return diffs
     
 def plot_freqs(freqs, n=30):
     # plot top n words and their frequencies from greatest to least
@@ -98,14 +108,17 @@ def plot_freqs(freqs, n=30):
     
     # Plot in horizontal bars in descending order
     plt.barh(range(n-1,-1,-1), freqs_sorted, 
-             align='center', color=t20[0], alpha=0.8)
+             align='center', color=t20[0], alpha=0.8, linewidth=0)
     # Label each bar with its word
     plt.yticks(range(n-1,-1,-1), words_sorted)
     plt.xlabel('Word Frequency (per billlion)')
     plt.title('Top ' + str(n) + ' words used in Billboard 100 Songs')
     plt.show()
 
-def beautify_plot():
+def beautify_plot(fig):
+	# Set background color to white
+	fig.patch.set_facecolor((1,1,1))
+
 	# Remove frame and unnecessary tick-marks
 	ax = plt.subplot(111)
 	ax.spines['top'].set_visible(False)
@@ -113,7 +126,11 @@ def beautify_plot():
 	ax.spines['right'].set_visible(False)
 	ax.spines['left'].set_visible(False)
 
+	plt.tick_params(axis='y', which='both', left='off', right='off')
+	plt.tick_params(axis='x', which='both', top='off', bottom='off')
+
 	# Any other default edits to the plot can go here:
+	# figure doesn't need to be returned as the pass was by reference
 
 def read_freqs(text_file):
 	# read a three-column text file of rank / word / frequency
@@ -139,3 +156,16 @@ def read_freqs(text_file):
 
 	return freqs
 
+def write_freqs(filename, freqs):
+	fhandle = open(filename, 'w')
+	# Sort and write to file in sorted order
+	words_sorted = sorted(freqs, key=freqs.get, reverse=True)
+	freqs_sorted = [freqs[word] for word in words_sorted]
+
+	for word, freq in zip(words_sorted, freqs_sorted):
+		fhandle.write(word)
+		fhandle.write('\t')
+		fhandle.write(str(freq))
+		fhandle.write('\n')
+
+	fhandle.close()
