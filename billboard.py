@@ -1,21 +1,23 @@
 # classes for billboard scraping
-import re
+import re, wikipedia, requests
+from bs4 import BeautifulSoup
 
 # container for all billboard entries
 class Billboard:
     # construct with blank list of entries
-    def __init__(self):
-        self.entries = [];
-
-    # use list iterator
-    # def __iter__(self):
-    #     return self
+    def __init__(self, start_year=1946, entries_per_year=100):
+        self.entries = []
+        self.start_year = start_year
+        self.entries_per_year = entries_per_year
 
     def __str__(self):
         to_string = ''
         for entry in self.entries:
             to_string += str(entry)
         return to_string
+
+    def __len__(self):
+        return len(self.entries)
 
     # add entry
     def add_entry(self, new_entry):
@@ -56,6 +58,20 @@ class Billboard:
 
         return num_words, freqs
 
+    def search(self, query):
+        # Return a sub-billboard with only entries that match a query
+
+    def grab(self, year, position):
+        # Return a specific entry from year and position
+        if year < self.start_year:
+            return None
+
+        # Calculate location in list
+        years_in = year - self.start_year
+        entry_num = years_in * self.entries_per_year + position
+
+        return self.entries[entry_num]
+
 class Entry:
     # construct with basic info
     def __init__(self, date, info):
@@ -69,12 +85,52 @@ class Entry:
         # has entry been completed?
         self.completed = False
 
-    # Methods to act on the object
+    def __len__(self):
+        return len(self.members)
+
     def complete(self):
         # invoke further scraping methods to complete entry
-        self.members = get_members(self.artist)
+        self.get_members()
         self.birthYear, self.homeTown = get_born(self.members)
         self.completed = True
+
+    def get_members(self):
+        # TODO: handle the case with collaboration between artists
+
+        # trim the artist name
+        feat = self.artist.find('feat')
+        if feat >= 0:
+            artist = self.artist[:feat]
+        else:
+            artist = self.artist
+
+        # find artist's wikipedia page
+        try:
+            wiki_page = wikipedia.page(artist)
+        except:
+            print('Artist wikipedia page not found')
+            raise
+
+        # Parse wikipedia page
+        wiki_html = requests.get(wiki_page.url).text
+        soup = BeautifulSoup(wiki_html, 'lxml')
+
+        # Infobox is wikipedia sidebar with basic info
+        infobox = soup.find(class_ = 'infobox')
+        if infobox == None:
+            print('Wikipedia page missing infobox')
+            raise
+
+        # Look for entry in infobox listing members
+        membersRow = infobox.find('th', text=['Members', 'Past members'])
+        if membersRow == None:
+            self.members = [artist]
+
+        # If the row exists, go to the list of members and add to list
+        self.members = []
+        membersBox = membersRow.find_next_sibling('td')
+        for member in membersBox.stripped_strings:
+            self.members.append(member)
 
     # Methods to perform calculations etc. on object
     def get_age(self):
@@ -86,9 +142,6 @@ class Entry:
             for year in self.birthYear:
                 ages.append(self.date - year)
             return ages
-
-    def __len__(self):
-        return len(self.members)
 
     # Ways of print_flag 
     def __str__(self):
