@@ -75,7 +75,7 @@ def compare_freqs(default, sample, default_label='Default',
 			height=bar_width, linewidth=0)
 		# Plot default frequencies
 		default_bars = plt.barh(default_locs, default_sorted,
-			align='center', color=t20[1], alpha=0.8, label=default_label,
+			align='center', color=t20[0], alpha=0.8, label=default_label,
 			height=bar_width, linewidth=0)
 
 		# Label each pair of bars with its word
