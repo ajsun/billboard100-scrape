@@ -6,11 +6,11 @@ import numpy as np
 # importing the data #
 
 
-sample = pd.read_csv('billboard_titles.txt')
-sample = sample.set_index('word').to_dict()['count']
 
-
-default = pd.read_csv('sources/gutenberg10k.txt')
-default = default.set_index('word').to_dict()['count']
+sample = semantics.return_dict('billboard_titles.txt')
+default = semantics.return_dict('sources/gutenberg10k.txt')
 
 semantics.plot_freqs(sample)
+semantics.plot_freqs(default)
+
+semantics.compare_freqs(default, sample)

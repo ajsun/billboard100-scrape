@@ -9,6 +9,7 @@ Created on Wed Dec  9 14:58:27 2015
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+import pandas as pd
 
 # Pleasing colormap to use, 'Tableau 20'
 t20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),    
@@ -74,7 +75,7 @@ def compare_freqs(default, sample, default_label='Default',
 			height=bar_width, linewidth=0)
 		# Plot default frequencies
 		default_bars = plt.barh(default_locs, default_sorted,
-			align='center', color=t20[1], alpha=0.8, label=default_label,
+			align='center', color=t20[0], alpha=0.8, label=default_label,
 			height=bar_width, linewidth=0)
 
 		# Label each pair of bars with its word
@@ -173,3 +174,11 @@ def write_freqs(filename, freqs):
 		fhandle.write(str(freqs_sorted[i]) + '\n')
 
 	fhandle.close()
+
+# takes on a csv file with two columns, one with words 
+# and the other with counts
+# must have header of "words,counts"
+def return_dict(filename):
+	sample = pd.read_csv(filename)
+	sample = sample.set_index('word').to_dict()['count']
+	return sample
