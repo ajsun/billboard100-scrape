@@ -90,11 +90,11 @@ class Entry:
 
     def complete(self):
         # invoke further scraping methods to complete entry
-        self.get_members()
-        self.birthYear, self.homeTown = get_born(self.members)
+        self.set_members()
+        self.birth_years, self.birth_places = get_born(self.members)
         self.completed = True
 
-    def get_members(self):
+    def set_members(self):
         # TODO: handle the case with collaboration between artists
 
         # trim the artist name
@@ -131,6 +131,49 @@ class Entry:
         membersBox = membersRow.find_next_sibling('td')
         for member in membersBox.stripped_strings:
             self.members.append(member)
+
+    def get_born(self):
+        birth_years = []
+        birth_places = []
+        for person in self.members:
+            # Find band member wikipedia page
+            try:
+                wiki_page = wikipedia.page(person)
+            except:
+                birth_places.append('Not Found')
+                birth_years.append('Not Found')
+                continue
+
+            # Parse wikipedia page
+            wiki_html = requests.get(wiki_page.url).text
+            soup = BeautifulSoup(wiki_html, 'lxml')
+            infobox = soup.find(class_ = 'infobox')
+            if infobox == None:
+                birth_places.append('Not Found')
+                birth_years.append('Not Found')
+                continue
+
+            # Get birthplace
+            birth_place_node = infobox.find('span', class_ = 'birthplace')
+            birth_place = str()
+            if birth_place_node != None:
+                for s in birth_place_node.strings:
+                    birth_place += s
+            else:
+                birth_place = 'Not Found'
+
+            birth_places.append(birth_place)
+
+            # get birth year
+            bday_node = infobox.find('span', class_ = 'bday')
+            if bday_node != None:
+                birth_year = int(bday_node.string[0:4])
+            else:
+                birth_year = 'Not Found'
+
+            birth_years.append(birth_year)
+
+        return [birth_years, birth_places]
 
     # Methods to perform calculations etc. on object
     def get_age(self):
