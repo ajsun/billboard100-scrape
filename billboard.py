@@ -39,8 +39,8 @@ class Billboard:
             clean_title = space_chars.sub(' ', clean_title)
 
             # loop through each word in the title
-            for word in clean_title.split():  
-                # keep total count              
+            for word in clean_title.split():
+                # keep total count
                 num_words += 1
                 
                 # update dictionary, case insensitive
@@ -60,6 +60,10 @@ class Billboard:
 
     def search(self, query):
         # Return a sub-billboard with only entries that match a query
+
+        # TODO 
+
+        return None
 
     def grab(self, year, position):
         # Return a specific entry from year and position
@@ -82,6 +86,11 @@ class Entry:
         self.artist = info[1]
         self.title = info[2]
 
+        # trim the artist name
+        feat = self.artist.find('feat')
+        if feat >= 0:
+            self.artist = self.artist[:feat]
+
         # has entry been completed?
         self.completed = False
 
@@ -91,22 +100,15 @@ class Entry:
     def complete(self):
         # invoke further scraping methods to complete entry
         self.set_members()
-        self.birth_years, self.birth_places = get_born(self.members)
+        self.birth_years, self.birth_places = self.get_born()
         self.completed = True
 
     def set_members(self):
         # TODO: handle the case with collaboration between artists
 
-        # trim the artist name
-        feat = self.artist.find('feat')
-        if feat >= 0:
-            artist = self.artist[:feat]
-        else:
-            artist = self.artist
-
         # find artist's wikipedia page
         try:
-            wiki_page = wikipedia.page(artist)
+            wiki_page = wikipedia.page(self.artist)
         except:
             print('Artist wikipedia page not found')
             raise
@@ -124,7 +126,8 @@ class Entry:
         # Look for entry in infobox listing members
         membersRow = infobox.find('th', text=['Members', 'Past members'])
         if membersRow == None:
-            self.members = [artist]
+            self.members = [self.artist]
+            return
 
         # If the row exists, go to the list of members and add to list
         self.members = []
@@ -133,6 +136,9 @@ class Entry:
             self.members.append(member)
 
     def get_born(self):
+        if not self.members:
+            raise
+
         birth_years = []
         birth_places = []
         for person in self.members:
@@ -175,16 +181,38 @@ class Entry:
 
         return [birth_years, birth_places]
 
-    # Methods to perform calculations etc. on object
+    def get_lyrics(self):
+        # Pull lyrics off of genius.com, TODO: use other sites as backup
+        baseurl = 'http://genius.com/'
+        # convert song title to page ID in style of genius.com
+        artist = re.sub('\s', '-', self.artist)
+        title = re.sub('\s', '-', self.title)
+        lyrics_url = baseurl + artist + '-' + title + '-lyrics'
+        # parse lyrics page via soup
+        lyrics_html = requests.get(lyrics_url).text
+        lyrics_soup = BeautifulSoup(lyrics_html)
+        # search for lyrics on page / confirm the page exists
+        lyrics = ''
+        lyrics_container = lyrics_soup.find('div', class_='lyrics_container')
+        if lyrics_container == None:
+            return '*Lyrics not found'
+        for line in lyrics_container.find('p').stripped_strings:
+            lyrics += line + '\n'
+
+        # trim lyrics for bracket sections / attributions
+        lyrics = re.sub('\[.*\]', '', lyrics)
+        return lyrics
+
     def get_age(self):
         # determine age of performer(s) in billboard year
-        if len(self.birthYear) == 1:
-            return [self.date - self.birthYear[0]]
-        else:
-            ages = []
-            for year in self.birthYear:
+        ages = []
+        for year in self.birth_years:
+            if isinstance(year,int):
                 ages.append(self.date - year)
-            return ages
+            else:
+                ages.append('Uknown')
+
+        return ages
 
     # Ways of print_flag 
     def __str__(self):
@@ -194,14 +222,17 @@ class Entry:
 
     def detail(self):
         if self.completed:
-            to_string = str(self) + '\n' + \
-                'Homewtown(s):' + self.homeTown + '\n' + \
-                'Birthyear(s):' + self.birthYear + '\n'
+            to_string = str(self)
+            for person, place, year, age in zip(self.members, 
+                self.birth_places, self.birth_years, self.get_age()):
+                to_string += '\n' + person + '\n\tHometown: ' + \
+                    place + '\n\tBirthyear: ' + str(year) + \
+                    '\n\tAge at release: ' + str(age)
             return to_string
         else:
             to_string = str(self) + '\n' + \
-                'Homewtown(s):' + 'Unset' + '\n' + \
-                'Birthyear(s):' + 'Unset' + '\n'
+                'Homewtown(s): ' + 'Unset' + '\n' + \
+                'Birthyear(s): ' + 'Unset' + '\n'
             return to_string
 
 # basic client
