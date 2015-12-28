@@ -168,10 +168,9 @@ def write_freqs(filename, freqs):
 	words_sorted = sorted(freqs, key=freqs.get, reverse=True)
 	freqs_sorted = [freqs[word] for word in words_sorted]
 
-	for i in range(len(words_sorted)):
-		fhandle.write(str(i) + '\t')
-		fhandle.write(str(words_sorted[i]) + '\t')
-		fhandle.write(str(freqs_sorted[i]) + '\n')
+	for word,freq in zip(words_sorted,freqs_sorted):
+		fhandle.write(word + ',')
+		fhandle.write(str(freq) + '\n')
 
 	fhandle.close()
 
